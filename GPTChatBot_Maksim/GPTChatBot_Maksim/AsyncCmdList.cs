@@ -1,6 +1,7 @@
 ﻿using static GPTChatBot_Maksim.Dictionaries.ReplyDictionaries;
 using GPTChatBot_Maksim.Utilities;
 using static GPTChatBot_Maksim.Utilities.KeyboardGetter;
+using Telegram.Bot.Types;
 
 namespace GPTChatBot_Maksim.Commands
 {
@@ -156,7 +157,7 @@ namespace GPTChatBot_Maksim.Commands
             var chatID = callback.Message.Chat.Id;
 
             // Проверка, что режим AI уже выключен
-            if (AI_TeleBot.isAssistant_Mode.TryGetValue(chatID, out bool IsEnabled) && IsEnabled)
+            if (!AI_TeleBot.isAssistant_Mode.TryGetValue(chatID, out bool IsDisabled) && !IsDisabled)
             {
                 await bot_client.AnswerCallbackQuery(callback.Id, "AI режим - уже выключен!", showAlert: false);
                 return;
@@ -575,14 +576,13 @@ namespace GPTChatBot_Maksim.Commands
 
             await bot_client.SendChatAction(chatID, ChatAction.Typing);
             await Task.Delay(3500);
-            await bot_client.EditMessageText(chatID, messageId: update.Message.Id, profileInfo, ParseMode.Markdown);
+            await bot_client.SendMessage(chatID, profileInfo, ParseMode.Markdown);
         }
     }
     public class OnProfileChange : ICommand
     {
         public string CommandName => "profile_change";
         private readonly TelegramBotClient bot_client;
-        private readonly Dictionary<long, UserProfile> user_profiles = [];
         /// <summary>
         /// Команда-кнопка вызова вложенного меню для изменения профиля пользователя <see cref="user_profiles"/>
         /// </summary>
@@ -593,13 +593,58 @@ namespace GPTChatBot_Maksim.Commands
             var chatID = callback.Message.Chat.Id;
             var userId = callback.From.Id;
 
-            if (!user_profiles.ContainsKey(userId))
-                    user_profiles[userId] = new UserProfile();
+            if (!UserProfile.user_profiles.ContainsKey(userId))
+                    UserProfile.user_profiles[userId] = new UserProfile();
 
             string profileSettings = $"Для изменения профиля Бота, используй: `/set_name Имя`, `/set_topic Тема`, `/set_style Стиль`.";
             await Task.Delay(2000);
             await bot_client.EditMessageText(chatID, messageId: callback.Message.MessageId, profileSettings, ParseMode.Markdown, replyMarkup: GetProfileKeyboard());
             await bot_client.AnswerCallbackQuery(callback.Id);
+        }
+    }
+    public class OnProfileNameSet : ICommand
+    {
+        public string CommandName => "set_name";
+        private readonly TelegramBotClient bot_client;
+        public OnProfileNameSet(TelegramBotClient client) => bot_client = client;
+        public async Task ExecuteAsync(CallbackQuery callback)
+        {
+            var chatID = callback.Message.Chat.Id;
+            var userId = callback.From.Id;
+
+            await bot_client.SendChatAction(chatID, ChatAction.Typing);
+            await Task.Delay(700);
+            await bot_client.SendMessage(chatID, $"Имя изменено (автоматически) на: {CommandManager.userProfile.Name}");
+        }
+    }
+    public class OnProfileTopicSet : ICommand
+    {
+        public string CommandName => "set_topic";
+        private readonly TelegramBotClient bot_client;
+        public OnProfileTopicSet(TelegramBotClient client) => bot_client = client;
+        public async Task ExecuteAsync(CallbackQuery callback)
+        {
+            var chatID = callback.Message.Chat.Id;
+            var userId = callback.From.Id;
+
+            await bot_client.SendChatAction(chatID, ChatAction.Typing);
+            await Task.Delay(700);
+            await bot_client.SendMessage(chatID, $"Тема изменена (автоматически) на: {CommandManager.userProfile.FavouriteTopic}");
+        }
+    }
+    public class OnProfileStyleSet : ICommand
+    {
+        public string CommandName => "set_topic";
+        private readonly TelegramBotClient bot_client;
+        public OnProfileStyleSet(TelegramBotClient client) => bot_client = client;
+        public async Task ExecuteAsync(CallbackQuery callback)
+        {
+            var chatID = callback.Message.Chat.Id;
+            var userId = callback.From.Id;
+
+            await bot_client.SendChatAction(chatID, ChatAction.Typing);
+            await Task.Delay(700);
+            await bot_client.SendMessage(chatID, $"Стиль общения изменено (автоматически) на: {CommandManager.userProfile.FavouriteTopic}");
         }
     }
 }

@@ -33,6 +33,7 @@ namespace GPTChatBot_Maksim
         private readonly TelegramBotClient bot_client;
         private readonly List<ICommand> commands;
         private readonly ChatHistoryManager historyManager;
+        public static readonly UserProfile userProfile = new();
         private readonly Logger logger = new("..\\..\\..\\MaksimBotExceptions", LogLevel.Exception);
         /// <summary>
         /// Конструктор для списка всех команд-классов. Подключен логгер и менеджер управления чатами
@@ -65,16 +66,21 @@ namespace GPTChatBot_Maksim
                 new OnDateTimePrint(bot_client),
                 new OnProfileShow(bot_client),
                 new OnProfileChange(bot_client),
+                new OnProfileNameSet(bot_client),
+                new OnProfileTopicSet(bot_client),
+                new OnProfileStyleSet(bot_client),
                 new OnBackToMain(bot_client)
             ];
         }
         /// <summary>
-        /// Обработчик (делегат) команд с универсальной проверкой
+        /// Обработчик (делегат) команд с универсальной проверкой, запускается из StartHandleUpdate
         /// </summary>
         /// <param name="update">Тип обновления.</param>
         /// <returns></returns>
         public async Task HandleUpdate(Update update)
         {
+            Console.WriteLine($"Получено обновление типа: {update.Type}");
+
             try
             {
                 // Обработка ТОЛЬКО текстовых команд, либо быстрых ответов сообщении и сообщении AI
@@ -113,7 +119,7 @@ namespace GPTChatBot_Maksim
                     {
                         Console.WriteLine($"[DEBUG] Найдена команда: {command.CommandName}");
                         await command.ExecuteAsync(callback); // Обработка запросов
-                    }    
+                    }
                     else if (callback.Data == "quick_answers")
                     {
                         // если была нажата кнопка вызова меню быстрых реплик

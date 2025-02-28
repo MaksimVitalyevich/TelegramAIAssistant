@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 
 namespace GPTChatBot_Maksim
 {
@@ -8,8 +9,18 @@ namespace GPTChatBot_Maksim
     public class AI_AssistantLogic
     {
         private static readonly HttpClient httpClient = new();
+        private static readonly HttpClientHandler httpdHandler = new();
         private readonly string apiKey;
-        public AI_AssistantLogic(string openAiApiKey) => apiKey = openAiApiKey;
+        private readonly WebProxy proxyServ = new WebProxy("https://free-proxy-list.net:80")
+        {
+            Credentials = new NetworkCredential("Anonymous", "")
+        };
+        public AI_AssistantLogic(string openAiApiKey)
+        {
+            apiKey = openAiApiKey;
+            httpdHandler.Proxy = proxyServ;
+            httpdHandler.UseProxy = true;
+        }
 
         /// <summary>
         /// Генерация AI-ответов
@@ -29,6 +40,7 @@ namespace GPTChatBot_Maksim
                 max_tokens = 200
             };
 
+            using var client = new HttpClient(httpdHandler);
             var requestJson = JsonSerializer.Serialize(requestBody);
             var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions") // запрос на обработку сообщении
             {
@@ -44,7 +56,7 @@ namespace GPTChatBot_Maksim
             {
                 string errorMessage = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Ошибка OpenAI API: {response.StatusCode} - {errorMessage}");
-                return "❌ Ошибка запроса к AI. Проверь ключ или попробуй позже.";
+                return "Ошибка запроса к AI OpenAI! Статус кода - 403! Проверьте ключ или корректность IP-адреса!";
             }
 
             response.EnsureSuccessStatusCode();
@@ -117,7 +129,8 @@ namespace GPTChatBot_Maksim
                     new { role = "user", content = text }
                 }
             };
-            using var client = new HttpClient();
+
+            using var client = new HttpClient(httpdHandler);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");

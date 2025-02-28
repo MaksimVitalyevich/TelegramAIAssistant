@@ -81,9 +81,9 @@
         /// <returns></returns>
         internal static InlineKeyboardMarkup GetProfileKeyboard() => new(
         [
-            [InlineKeyboardButton.WithCallbackData("Изменить имя", "profile_set_name")],
-            [InlineKeyboardButton.WithCallbackData("Изменить тему", "profile_set_topic")],
-            [InlineKeyboardButton.WithCallbackData("Изменить стиль общения", "profile_set_style")],
+            [InlineKeyboardButton.WithCallbackData("Изменить имя", "set_name")],
+            [InlineKeyboardButton.WithCallbackData("Изменить тему", "set_topic")],
+            [InlineKeyboardButton.WithCallbackData("Изменить стиль общения", "set_style")],
             [InlineKeyboardButton.WithCallbackData("<- Назад", "back_to_main")]
         ]);
     }

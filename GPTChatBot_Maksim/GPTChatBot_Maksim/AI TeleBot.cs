@@ -55,6 +55,7 @@
             };
             bot_client.StartReceiving(updateHandler: async (client, update, token) => await commandManager.HandleUpdate(update),
                 errorHandler: async (client, exception, token) => await ErrorHandler(exception), reciever_options);
+            await Task.Delay(-1); // Бесконечное ожидание не дающее программе завершится
         }
         /// <summary>
         /// Обработчик API ошибок бота
