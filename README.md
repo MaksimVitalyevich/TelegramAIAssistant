@@ -1,5 +1,8 @@
 # TelegramAIAssistant (CS Console Microsoft DotNET Version 9.0)
 
+# Link to my TeleBot:
+t.me/gpt098maks_bot
+
 ## --ChangeLog-- Updated to Version 2.5!
 # -- Added:
  - CommandManager class. Now bot's functionality depends on such manager to handle upcoming updates;
