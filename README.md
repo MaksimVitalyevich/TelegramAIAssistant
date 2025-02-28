@@ -1,4 +1,19 @@
-# TelegramAIAssistant
+# TelegramAIAssistant (CS Console Microsoft DotNET Version 9.0)
+
+# --ChangeLog-- Updated to Version 2.0!
+-- Added:
+ - CommandManager class. Now bot's functionality depends on such manager to handle upcoming updates;
+ - AsyncCmdList class. Whole list of asynchronized command-classes;
+ - HistoryManager class. manager to edit various bot chats;
+ - Now project depencies are stored in GlobalUsings file, including custom projects;
+ - anti-spam check! Now both "/start" & "/help" cannot be executed more than 5 times!
+-- Fixes:
+ - Chat commands now work without exceptions;
+ - command "/profile" now correctly show user's profile;
+ - AI_Telebot class now only contains main logic and error handler;
+ - inline "assistant_mode" command now responds correctly, while pressed;
+ - Edited jokes & facts. Added more of them;
+ - Overall code cleanup. Deleted unneeded switch blocks.
 
 ## Project Description:
 My personal friendly AI-Bot to have a nice conversation. His main goal is to process various commands, using InlineKeyboardMarkup as his Main Menu. He helps users to:
@@ -36,6 +51,25 @@ Q: *Where to store tokens?*
 A: 1st option - For secure token storage, you need to create "Environment Variables" inside your PC. You can do this by command "setx <TOKEN_NAME> <TOKEN_KEY>" or simply create Variables through
 "SystemOptions->Additional->Environment Variables...->Create... <NAME> <VALUE>" when press "OK".
 2nd option - Creating your personal "app.config" file! In parameter "connectionStrings" you must add: Name, Providername (if needed), connectionString.
+
+## Screenshots:
+1. Console Test:
+![ConsoleTest1](https://github.com/user-attachments/assets/9e65055a-f19b-4b3d-b272-97585c31521a)
+![ConsoleTest2](https://github.com/user-attachments/assets/8460b2b6-50c5-4ec2-9299-572065a61d5d)
+
+2. Log Example:
+![LogText](https://github.com/user-attachments/assets/7b7b05b1-7af4-49f8-8b87-e20a90560b29)
+
+3. Telegramm-Bot Test:
+![bot_start](https://github.com/user-attachments/assets/615b7abe-e925-42ca-b550-754eaeec548c)
+![bot_mainmenu](https://github.com/user-attachments/assets/6c6f113d-5d2c-47a7-b912-c5fe643f4a2a)
+![bot_helpmenu](https://github.com/user-attachments/assets/363b7fa6-5187-4bd3-bdd5-7cd3cd2f77b5)
+![bot_assistantinlinemenu](https://github.com/user-attachments/assets/adbce435-44bf-4c32-a1cd-b75c7bda690b)
+![bot_aimodeactive](https://github.com/user-attachments/assets/2b8867d5-7458-4c60-9848-a7b82616aff0)
+![bot_replymenu](https://github.com/user-attachments/assets/75de2a1e-dbd8-45f3-bd25-96278a9a29f0)
+![bot_replyoptions](https://github.com/user-attachments/assets/c2a133e8-9189-4df8-818d-8429370c47cb)
+![bot_chatsettings](https://github.com/user-attachments/assets/905182c7-2dc7-4163-9477-4bef5072bb5a)
+
 
 *Release Version*
 * First release
