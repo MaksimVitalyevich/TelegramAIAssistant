@@ -1,13 +1,13 @@
 # TelegramAIAssistant (CS Console Microsoft DotNET Version 9.0)
 
-# --ChangeLog-- Updated to Version 2.0!
--- Added:
+## --ChangeLog-- Updated to Version 2.5!
+# -- Added:
  - CommandManager class. Now bot's functionality depends on such manager to handle upcoming updates;
  - AsyncCmdList class. Whole list of asynchronized command-classes;
  - HistoryManager class. manager to edit various bot chats;
  - Now project depencies are stored in GlobalUsings file, including custom projects;
  - anti-spam check! Now both "/start" & "/help" cannot be executed more than 5 times!
--- Fixes:
+# -- Fixes:
  - Chat commands now work without exceptions;
  - command "/profile" now correctly show user's profile;
  - AI_Telebot class now only contains main logic and error handler;
@@ -23,6 +23,9 @@ My personal friendly AI-Bot to have a nice conversation. His main goal is to pro
 4. Offer some mini-games;
 5. Edit user profiles.
 Telegramm-Bot was written on C# by used API's: "Telegram-Bot API", "OpenAI API", "Configuration Manager". As a bonus - he can log all messages into determined directory, by help of my library "LoggerLibrary"!
+
+## Used Patterns:
+Update, Factory, State, Builder, Command
 
 ## Functionality:
 -- Sending automatic messages & edited messages;
