@@ -5,12 +5,14 @@ t.me/gpt098maks_bot
 
 ## --ChangeLog-- Updated to Version 2.5!
 # -- Added:
+ - Processing files. Now bot can analyze text files & generate short response, what he understood from it;
  - CommandManager class. Now bot's functionality depends on such manager to handle upcoming updates;
  - AsyncCmdList class. Whole list of asynchronized command-classes;
  - HistoryManager class. manager to edit various bot chats;
  - Now project depencies are stored in GlobalUsings file, including custom projects;
  - anti-spam check! Now both "/start" & "/help" cannot be executed more than 5 times!
 # -- Fixes:
+ - Now bot uses DeepInfra API instead of OpenAI!
  - Chat commands now work without exceptions;
  - command "/profile" now correctly show user's profile;
  - AI_Telebot class now only contains main logic and error handler;
@@ -24,8 +26,11 @@ My personal friendly AI-Bot to have a nice conversation. His main goal is to pro
 2. Open useful websites;
 3. Tell facts or jokes;
 4. Offer some mini-games;
-5. Edit user profiles.
-Telegramm-Bot was written on C# by used API's: "Telegram-Bot API", "OpenAI API", "Configuration Manager". As a bonus - he can log all messages into determined directory, by help of my library "LoggerLibrary"!
+5. Edit user profiles;
+6. Analyze Documents/Files.
+Telegramm-Bot was written on C# by used API's: "Telegram-Bot API", "DeepInfra API", "Configuration Manager". As a bonus - he can log all messages into determined directory, by help of my library "LoggerLibrary"!
+*Why i used DeepInfra API instead of OpenAI?*
+Because DeepInfra offers free-to-use daily requests on estimated max 2048 tokens! OpenAI, unfortunately, requires payment upon registrating any API key & even having free quota is not enough for public demonstration. On DeepInfra.com you can easily find tons of demo AI-models for public use!
 
 ## Used Patterns:
 Update, Factory, State, Builder, Command
