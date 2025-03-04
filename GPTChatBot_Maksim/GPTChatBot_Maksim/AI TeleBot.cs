@@ -29,13 +29,13 @@
                 ConfigurationManager.ConnectionStrings["GPTMaksim"]?.ConnectionString ?? 
                 throw tokenNullException;
 
-            string openAiKey = Environment.GetEnvironmentVariable("GPT AIKey") ??
-                ConfigurationManager.ConnectionStrings["GPT AIKey"]?.ConnectionString ??
+            string AiKey = Environment.GetEnvironmentVariable("DeepInfra") ??
+                ConfigurationManager.ConnectionStrings["DeepInfra AIKey"]?.ConnectionString ??
                 throw tokenNullException;
 
             bot_client = new(token);
             commandManager = new(bot_client);
-            ai_assistant = new(openAiKey);
+            ai_assistant = new(AiKey);
             logger = new Logger(logDir, LogLevel.Error);
         }
         /// <summary>

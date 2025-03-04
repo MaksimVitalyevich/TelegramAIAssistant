@@ -1,27 +1,19 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 
 namespace GPTChatBot_Maksim
 {
     /// <summary>
-    /// Обработка AI-ассистента для генерации ответов-сообщении
+    /// Обработка AI-ассистента для генерации ответов-сообщении (основа DeepInfra)
     /// </summary>
     public class AI_AssistantLogic
     {
         private static readonly HttpClient httpClient = new();
-        private static readonly HttpClientHandler httpdHandler = new();
+        private const string apiUrl = "https://api.deepinfra.com/v1/openai/chat/completions";
         private readonly string apiKey;
-        private readonly WebProxy proxyServ = new WebProxy("https://free-proxy-list.net:80")
+        public AI_AssistantLogic(string apiKey)
         {
-            Credentials = new NetworkCredential("Anonymous", "")
-        };
-        public AI_AssistantLogic(string openAiApiKey)
-        {
-            apiKey = openAiApiKey;
-            httpdHandler.Proxy = proxyServ;
-            httpdHandler.UseProxy = true;
+            this.apiKey = apiKey;
         }
-
         /// <summary>
         /// Генерация AI-ответов
         /// </summary>
@@ -31,39 +23,39 @@ namespace GPTChatBot_Maksim
         {
             var requestBody = new
             {
-                model = "gpt-3.5-turbo", // Используется GPT-3.5
+                model = "qwen2.5/7b-chat",
                 messages = new[]
                 {
-                    new {role = "system", content = "Ты разговорный AI-бот, который дружелюбно общается с пользователями."},
+                    new {role = "system", content = "Ты простой разговорный дружелюбный собеседник, с которым можно поболтать на любые темы."},
                     new {role = "user", content = userMsg}
                 },
-                max_tokens = 200
+                max_tokens = 512
             };
 
-            using var client = new HttpClient(httpdHandler);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
             var requestJson = JsonSerializer.Serialize(requestBody);
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions") // запрос на обработку сообщении
+            var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
             {
-                Headers = { { "Authorization", $"Bearer {apiKey}" } }, // Пользователь и его токен
-                Content = new StringContent(requestJson, Encoding.UTF8, "application/json") // содержимое в виде JSON
+                Content = new StringContent(requestJson, Encoding.UTF8, "application/json")
             };
-
-            
 
             var response = await httpClient.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
                 string errorMessage = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Ошибка OpenAI API: {response.StatusCode} - {errorMessage}");
-                return "Ошибка запроса к AI OpenAI! Статус кода - 403! Проверьте ключ или корректность IP-адреса!";
+                Console.WriteLine($"Ошибка API: {response.StatusCode} - {errorMessage}");
+                return "❌ Ошибка запроса к AI! Возможно, сервер временно недоступен.";
             }
 
             response.EnsureSuccessStatusCode();
-
             var responseJson = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(responseJson);
-            var answer = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+            var answer = doc.RootElement.GetProperty("choices")[0]
+                                        .GetProperty("message")
+                                        .GetProperty("content")
+                                        .GetString();
 
             return answer ?? "Я не понял твоего вопроса.";
         }
@@ -118,23 +110,19 @@ namespace GPTChatBot_Maksim
         /// <returns></returns>
         internal async Task SendToGPT(string text, long chatID, TelegramBotClient bot_client)
         {
-            string apiUrl = "https://api.openai.com/v1/chat/completions";
+            string apiUrl = "https://free.churchless.tech/v1/chat/completions"; ;
 
             var requestData = new
             {
                 model = "gpt-3.5-turbo",
                 messages = new[]
                 {
-                    new { role = "system", content = "Ты - AI ассистент, который помогает анализировать текстовые файлы." },
                     new { role = "user", content = text }
                 }
             };
 
-            using var client = new HttpClient(httpdHandler);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-
             var jsonContent = new StringContent(JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(apiUrl, jsonContent);
+            var response = await httpClient.PostAsync(apiUrl, jsonContent);
             var responseString = await response.Content.ReadAsStringAsync();
 
             using var document = JsonDocument.Parse(responseString);

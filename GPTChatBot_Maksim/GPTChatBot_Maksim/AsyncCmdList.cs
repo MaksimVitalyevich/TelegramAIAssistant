@@ -1,7 +1,6 @@
 ﻿using static GPTChatBot_Maksim.Dictionaries.ReplyDictionaries;
 using GPTChatBot_Maksim.Utilities;
 using static GPTChatBot_Maksim.Utilities.KeyboardGetter;
-using Telegram.Bot.Types;
 
 namespace GPTChatBot_Maksim.Commands
 {

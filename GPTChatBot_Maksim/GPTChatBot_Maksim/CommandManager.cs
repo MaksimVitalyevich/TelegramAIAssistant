@@ -31,6 +31,7 @@ namespace GPTChatBot_Maksim
     internal class CommandManager
     {
         private readonly TelegramBotClient bot_client;
+        private readonly AI_AssistantLogic ai_assistant;
         private readonly List<ICommand> commands;
         private readonly ChatHistoryManager historyManager;
         public static readonly UserProfile userProfile = new();
@@ -39,7 +40,6 @@ namespace GPTChatBot_Maksim
         /// Конструктор для списка всех команд-классов. Подключен логгер и менеджер управления чатами
         /// </summary>
         /// <param name="client"></param>
-        /// <param name="aiAssistant"></param>
         public CommandManager(TelegramBotClient client)
         {
             bot_client = client;
@@ -79,13 +79,26 @@ namespace GPTChatBot_Maksim
         /// <returns></returns>
         public async Task HandleUpdate(Update update)
         {
-            Console.WriteLine($"Получено обновление типа: {update.Type}");
+            Console.WriteLine($"[DEBUG] Получено обновление типа: {update.Type}");
 
             try
             {
                 // Обработка ТОЛЬКО текстовых команд, либо быстрых ответов сообщении и сообщении AI
                 if (update.Message?.Text is { } messageText)
                 {
+                    if (update.Message.Document != null)
+                    {
+                        var fileID = update.Message.Document.FileId;
+                        var file = await bot_client.GetFile(fileID);
+                        var filePath = file.FilePath;
+
+                        string fileUrl = $"https://api.telegram.org/file/bot/{filePath}";
+                        Console.WriteLine($"[DEBUG] Файл загружен: {fileUrl}");
+
+                        await bot_client.SendMessage(update.Message.Chat.Id, "Ваш файл получен, провожу анализ...");
+                        await ai_assistant.ProcessTextFileAsync(update.Message, bot_client);
+                    }
+
                     logger.LogMessage(LogLevel.Info, $"[DEBUG] Текст сообщения: {messageText}");
 
                     var command = commands.FirstOrDefault(c => c.CommandName == messageText);

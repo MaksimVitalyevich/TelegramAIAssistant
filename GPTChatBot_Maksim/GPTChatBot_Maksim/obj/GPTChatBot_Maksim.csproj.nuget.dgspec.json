@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\СтудентВА\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\GPTChatBot_Maksim.csproj": {}
+    "C:\\Users\\MaksimVitalyevich\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\GPTChatBot_Maksim.csproj": {}
   },
   "projects": {
-    "C:\\Users\\СтудентВА\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\GPTChatBot_Maksim.csproj": {
+    "C:\\Users\\MaksimVitalyevich\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\GPTChatBot_Maksim.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\СтудентВА\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\GPTChatBot_Maksim.csproj",
+        "projectUniqueName": "C:\\Users\\MaksimVitalyevich\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\GPTChatBot_Maksim.csproj",
         "projectName": "GPTChatBot_Maksim",
-        "projectPath": "C:\\Users\\СтудентВА\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\GPTChatBot_Maksim.csproj",
-        "packagesPath": "C:\\Users\\СтудентВА\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\СтудентВА\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\obj\\",
+        "projectPath": "C:\\Users\\MaksimVitalyevich\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\GPTChatBot_Maksim.csproj",
+        "packagesPath": "C:\\Users\\MaksimVitalyevich\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\MaksimVitalyevich\\source\\repos\\GPTChatBot_Maksim\\GPTChatBot_Maksim\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\СтудентВА\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\MaksimVitalyevich\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -44,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.100"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net9.0": {
@@ -79,7 +79,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
