@@ -3,7 +3,7 @@
 # Link to my TeleBot:
 t.me/gpt098maks_bot
 
-## --ChangeLog-- Updated to Version 2.5!
+# --ChangeLog-- Updated to Version 2.5!
 # -- Added:
  - Processing files. Now bot can analyze text files & generate short response, what he understood from it;
  - CommandManager class. Now bot's functionality depends on such manager to handle upcoming updates;
@@ -20,7 +20,7 @@ t.me/gpt098maks_bot
  - Edited jokes & facts. Added more of them;
  - Overall code cleanup. Deleted unneeded switch blocks.
 
-## Project Description:
+# Project Description:
 My personal friendly AI-Bot to have a nice conversation. His main goal is to process various commands, using InlineKeyboardMarkup as his Main Menu. He helps users to:
 1. Edit chats;
 2. Open useful websites;
@@ -32,16 +32,16 @@ Telegramm-Bot was written on C# by used API's: "Telegram-Bot API", "DeepInfra AP
 *Why i used DeepInfra API instead of OpenAI?*
 Because DeepInfra offers free-to-use daily requests on estimated max 2048 tokens! OpenAI, unfortunately, requires payment upon registrating any API key & even having free quota is not enough for public demonstration. On DeepInfra.com you can easily find tons of demo AI-models for public use!
 
-## Used Patterns:
+# Used Patterns:
 Update, Factory, State, Builder, Command
 
-## Functionality:
+# Functionality:
 -- Sending automatic messages & edited messages;
 -- Executing commands, like: 'help', 'start' etc.;
 -- Integration with "OpenAI API";
 -- Log support.
 
-## Installing & Run:
+# Installing & Run:
 ### ===1. Visual Studio 2022===
 https://visualstudio.microsoft.com/ru/vs/community/
 ### ===2. Depencies===
@@ -57,13 +57,17 @@ Install-Package OpenAI
 Install-Package System.Configuration
 For custom library "Logger" (LoggerLibrary), make sure it's added to your project references.
 
-## Tokens:
+# Tokens:
 Q: *Where to store tokens?*
 A: 1st option - For secure token storage, you need to create "Environment Variables" inside your PC. You can do this by command "setx <TOKEN_NAME> <TOKEN_KEY>" or simply create Variables through
 "SystemOptions->Additional->Environment Variables...->Create... <NAME> <VALUE>" when press "OK".
 2nd option - Creating your personal "app.config" file! In parameter "connectionStrings" you must add: Name, Providername (if needed), connectionString.
 
-## Screenshots:
+# Known issues:
+1) Procedural generation can give unknown symbols, that stumble normal reading sometimes. To fix that, ask bot to generate short responses.
+2) Overall text may appear unreadable, with chance 5/100%. It can be fixed by resending same message twice.
+
+# Screenshots:
 1. Console Test:
 ![ConsoleTest1](https://github.com/user-attachments/assets/9e65055a-f19b-4b3d-b272-97585c31521a)
 ![ConsoleTest2](https://github.com/user-attachments/assets/8460b2b6-50c5-4ec2-9299-572065a61d5d)
@@ -81,9 +85,12 @@ A: 1st option - For secure token storage, you need to create "Environment Variab
 ![bot_replyoptions](https://github.com/user-attachments/assets/c2a133e8-9189-4df8-818d-8429370c47cb)
 ![bot_chatsettings](https://github.com/user-attachments/assets/905182c7-2dc7-4163-9477-4bef5072bb5a)
 
+4. AI Testing (still buggy, needs optimization!):
+![AI-Example1](https://github.com/user-attachments/assets/3fede739-9754-4e80-a239-0401dae3740a)
+![AI-Example2](https://github.com/user-attachments/assets/872a9085-1406-4ad9-8b39-5cac21b6cbc6)
 
 *Release Version*
-* First release
+* Second release
 
 *Project Author*:
 * GitHub: https://github.com/MaksimVitalyevich
