@@ -1,4 +1,4 @@
-﻿namespace GPTChatBot_Maksim.Utilities
+﻿namespace Utilities
 {
     /// <summary>
     /// Менеджер управления чатов
@@ -6,16 +6,14 @@
     public class ChatHistoryManager
     {
         // [] - упрощенная запись, эквивалент new Dictionary<T, T>();
-        private readonly Dictionary<long, Dictionary<string, List<string>>> chat_histories = [];
-        private readonly Dictionary<long, string> active_chats = [];
-        private readonly Logger logger;
+        private static readonly Dictionary<long, Dictionary<string, List<string>>> chat_histories = [];
+        private static readonly Dictionary<long, string> active_chats = [];
 
-        public ChatHistoryManager(Logger logger) => this.logger = logger;
         /// <summary>
         /// Получение списка чатов
         /// </summary>
         /// <param name="chatID">ID-номер чата.</param>
-        /// <returns></returns>
+        /// <returns>Список полученных чатов.</returns>
         public List<string> GetChatList(long chatID)
         {
             return chat_histories.ContainsKey(chatID) ? chat_histories[chatID].Keys.ToList() : [];
@@ -36,10 +34,10 @@
             return false;
         }
         /// <summary>
-        /// Создание новго чата
+        /// Создание нового чата
         /// </summary>
         /// <param name="chatID">ID-номер чата.</param>
-        /// <returns></returns>
+        /// <returns>Созданная история для чатов.</returns>
         public string NewChatHistory(long chatID)
         {
             if (!chat_histories.ContainsKey(chatID))
@@ -70,13 +68,13 @@
                 chat_histories[chatID][chatName] = [];
 
             chat_histories[chatID][chatName].Add(message);
-            logger.LogMessage(LogLevel.Info, $"[ChatID: {chatID}][{chatName}] {message}");
+            Logger.INSTANCE.LogMessage(LogLevel.Info, $"[ChatID: {chatID}][{chatName}] {message}");
         }
         /// <summary>
         /// Загрузка выбранного чата
         /// </summary>
         /// <param name="chatID">ID-номер чата.</param>
-        /// <returns></returns>
+        /// <returns>Загруженный предыдущий выбранный чат.</returns>
         public string LoadChatHistory(long chatID)
         {
             if (!active_chats.ContainsKey(chatID)) return "Активных чатов - нет!";

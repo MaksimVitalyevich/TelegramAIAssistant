@@ -1,12 +1,13 @@
-﻿namespace GPTChatBot_Maksim
+﻿namespace TelegrammBot
 {
     internal class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
-            var bot = new AI_TeleBot("..\\..\\..\\MaksimBotExceptions", new ArgumentNullException("Нету токена для бота 'GPTMaksim'!"));
+            SetLoggingPath();
+
+            var bot = new AI_TeleBot(new ArgumentNullException("Нету токена для бота 'GPTMaksim'!"));
             // обработчик логов в файл расширения .log, записывается в корневую папку проекта
-            var logger = new Logger("..\\..\\..\\MaksimBotExceptions", LogLevel.Info);
             await bot.StartAsync();
             while (true)
             {
@@ -15,13 +16,17 @@
                 if (command == "stop" || command == "shutdown" || command == "exit" || command == "sleep")
                 {
                     Console.WriteLine("[DEBUG] AI-Бот завершил свою работу...");
-                    logger.LogMessage(LogLevel.Info, "Бот завершил работу...");
+                    Logger.INSTANCE.LogMessage(LogLevel.Info, "Бот завершил работу...");
                     break;
                 }
                     
                 else
                     Console.WriteLine($"Команда - {command} не распознана!");
             }
+        }
+        static void SetLoggingPath()
+        {
+            Logger.INSTANCE.SetConfiguration(@"..\..\..\MaksimBotExceptions", LogLevel.Info);
         }
     }
 }

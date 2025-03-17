@@ -1,4 +1,4 @@
-﻿namespace GPTChatBot_Maksim.Utilities
+﻿namespace Keyboards
 {
     /// <summary>
     /// Клавиатуры Телеграмм-Бота
@@ -12,7 +12,6 @@
         internal static InlineKeyboardMarkup GetInlineKeyboard() => new(
         [
             [InlineKeyboardButton.WithCallbackData("Меню сайтов", "websites")],
-            [InlineKeyboardButton.WithCallbackData("Быстрый набор реплик", "quick_answers")],
             [InlineKeyboardButton.WithCallbackData("Режим ассистента", "assistant_mode")],
             [InlineKeyboardButton.WithCallbackData("Камень, Ножницы, Бумага...", "rps_minigame")],
             [InlineKeyboardButton.WithCallbackData("Настройки чата", "chat_settings")],

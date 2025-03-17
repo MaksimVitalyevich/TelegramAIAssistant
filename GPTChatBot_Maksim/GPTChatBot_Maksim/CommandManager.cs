@@ -1,177 +1,69 @@
-﻿using GPTChatBot_Maksim.Commands;
-using GPTChatBot_Maksim.Utilities;
+﻿using Assistant;
+using TelegrammBot;
 
-namespace GPTChatBot_Maksim
+namespace Commands
 {
-    /// <summary>
-    /// Интерфейс для обработки всех типов команд Телеграмм-Бота
-    /// </summary>
-    public interface ICommand
-    {
-        /// <summary>
-        /// Имя для команды
-        /// </summary>
-        string? CommandName { get; }
-        /// <summary>
-        /// Асинхронное выполнение команды с типом Update. По умолчанию, возвращает пустую выполненную задачу
-        /// </summary>
-        /// <param name="update">Параметр обновления.</param>
-        /// <returns></returns>
-        async Task ExecuteAsync(Update update) => await Task.CompletedTask;
-        /// <summary>
-        /// Асинхронное выполнение команды с типом CallbackQuery. По умолчанию, возвращает пустую выполненную задачу
-        /// </summary>
-        /// <param name="callback">Параметр запроса.</param>
-        /// <returns></returns>
-        async Task ExecuteAsync(CallbackQuery callback) => await Task.CompletedTask;
-    }
     /// <summary>
     /// Менеджер команд бота. Обрабатывает все типы команд
     /// </summary>
-    internal class CommandManager
+    public class CommandManager
     {
-        private readonly TelegramBotClient bot_client;
-        private readonly AI_AssistantLogic ai_assistant;
-        private readonly List<ICommand> commands;
-        private readonly ChatHistoryManager historyManager;
-        public static readonly UserProfile userProfile = new();
-        private readonly Logger logger = new("..\\..\\..\\MaksimBotExceptions", LogLevel.Exception);
-        /// <summary>
-        /// Конструктор для списка всех команд-классов. Подключен логгер и менеджер управления чатами
-        /// </summary>
-        /// <param name="client"></param>
-        public CommandManager(TelegramBotClient client)
+        private readonly Dictionary<string, TextCommand> textCommands = [];
+        private readonly Dictionary<string, CallbackCommand> callbackCommands = [];
+        private IDefaultTextCommand? defaultTextCommand;
+        private IDefaultCallbackCommand? defaultCallbackCommand;
+        
+        public CommandManager(TelegramBotClient client, AI_AssistantLogic ai)
         {
-            bot_client = client;
-            historyManager = new(logger);
-            // [] - эквивалетно для commands = new List<ICommand> {};
-            commands =
-            [
-                new OnStart(bot_client),
-                new OnHelp(bot_client),
-                new OnInlineMenu(bot_client),
-                new OnAssistantMenuShow(bot_client),
-                new OnAssistantOn(bot_client),
-                new OnAssistantOff(bot_client),
-                new OnWebUrlOpen(bot_client),
-                new OnQuickReply(bot_client, historyManager),
-                new OnMessageReply(bot_client, historyManager),
-                new OnChatSettings(bot_client),
-                new OnNewChat(bot_client, historyManager),
-                new OnSelectChat(bot_client, historyManager),
-                new OnLoadChat(bot_client, historyManager),
-                new OnDeleteChat(bot_client, historyManager),
-                new OnRPSMenuShow(bot_client),
-                new OnRPSGameStart(bot_client),
-                new OnDateTimePrint(bot_client),
-                new OnProfileShow(bot_client),
-                new OnProfileChange(bot_client),
-                new OnProfileNameSet(bot_client),
-                new OnProfileTopicSet(bot_client),
-                new OnProfileStyleSet(bot_client),
-                new OnBackToMain(bot_client)
-            ];
+            RegisterCommands(client, ai);
         }
-        /// <summary>
-        /// Обработчик (делегат) команд с универсальной проверкой, запускается из StartHandleUpdate
-        /// </summary>
-        /// <param name="update">Тип обновления.</param>
-        /// <returns></returns>
-        public async Task HandleUpdate(Update update)
+
+        private void RegisterCommands(TelegramBotClient client, AI_AssistantLogic ai)
         {
-            Console.WriteLine($"[DEBUG] Получено обновление типа: {update.Type}");
+            // Команды использующиеся по умолчанию
+            defaultTextCommand = new DefaultTextReplyCommand(client, ai);
+            defaultCallbackCommand = new DefaultCallbackCommand(client);
 
-            try
-            {
-                // Обработка ТОЛЬКО текстовых команд, либо быстрых ответов сообщении и сообщении AI
-                if (update.Message?.Text is { } messageText)
-                {
-                    if (update.Message.Document != null)
-                    {
-                        var fileID = update.Message.Document.FileId;
-                        var file = await bot_client.GetFile(fileID);
-                        var filePath = file.FilePath;
+            // Текстовые команды, Навигации по меню:
+            AddTextCommand(new OnStart(client));
+            AddTextCommand(new OnHelp(client));
+            AddTextCommand(new OnShowAiModel(client));
+            AddTextCommand(new OnProfileShow(client));
+            AddTextCommand(new OnDateTimePrint(client));
 
-                        string fileUrl = $"https://api.telegram.org/file/bot/{filePath}";
-                        Console.WriteLine($"[DEBUG] Файл загружен: {fileUrl}");
+            // Остальное (вызовы меню ответов и т. п.):
+            AddTextCommand(new OnInlineMenu(client));
+            AddTextCommand(new OnQuickReply(client));
+            AddTextCommand(new OnMessageReply(client));
 
-                        await bot_client.SendMessage(update.Message.Chat.Id, "Ваш файл получен, провожу анализ...");
-                        await ai_assistant.ProcessTextFileAsync(update.Message, bot_client);
-                    }
+            // Команды запросов (callback), Вызовы меню/подменю:
+            AddCallbackCommand(new OnWebUrlOpen(client));
+            AddCallbackCommand(new OnAssistantMenuShow(client));
+            AddCallbackCommand(new OnChatSettings(client));
+            AddCallbackCommand(new OnRPSMenuShow(client));
+            AddCallbackCommand(new OnProfileChange(client));
 
-                    logger.LogMessage(LogLevel.Info, $"[DEBUG] Текст сообщения: {messageText}");
-
-                    var command = commands.FirstOrDefault(c => c.CommandName == messageText);
-                    if (command != null)
-                    {
-                        Console.WriteLine($"[DEBUG] Найдена команда: {command.CommandName}");
-                        await command.ExecuteAsync(update); // Обработка текстовых команд
-                    }
-                    else if (commands.OfType<OnQuickReply>().Any(q => q.CommandName == "/quick_answers" && IsQuickReply(messageText)))
-                    {
-                        // Если сообщение - это быстрый ответ
-                        var quickReplyCommand = commands.OfType<OnQuickReply>().FirstOrDefault();
-                        if (quickReplyCommand != null)
-                            await quickReplyCommand.ExecuteAsync(update);
-                    }
-                    else
-                    {
-                        // Если сообщение не является быстрым ответом или текстовой командой, то генерируем AI-ответ
-                        var replyCommand = commands.OfType<OnMessageReply>().FirstOrDefault();
-                        if (replyCommand != null)
-                            await replyCommand.ExecuteAsync(update);
-                    }
-                }
-                // Обработка ТОЛЬКО запросов
-                else if (update.CallbackQuery is { } callback)
-                {
-                    logger.LogMessage(LogLevel.Info, $"[DEBUG] Нажата кнопка: {callback.Data}");
-
-                    var command = commands.FirstOrDefault(c => callback.Data.StartsWith(c.CommandName));
-                    if (command != null)
-                    {
-                        Console.WriteLine($"[DEBUG] Найдена команда: {command.CommandName}");
-                        await command.ExecuteAsync(callback); // Обработка запросов
-                    }
-                    else if (callback.Data == "quick_answers")
-                    {
-                        // если была нажата кнопка вызова меню быстрых реплик
-                        var quickreplyCommand = commands.OfType<OnQuickReply>().FirstOrDefault();
-                        if (quickreplyCommand != null)
-                            await quickreplyCommand.ExecuteAsync(new Update { Message = new Message { Text = "/quick_answers", Chat = callback.Message.Chat } });
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("[ERROR] Неизвестная команда!");
-                    logger.LogMessage(LogLevel.Warning, "Получен неизвестный тип запроса, без сообщения!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("HandleUpdate - Не получилось обработать запрос/сообщение.");
-                logger.LogMessage(LogLevel.Exception, $"Ошибка работы Телеграмм-Бота: {ex.Message}");
-            }
+            // Определенные запросы-действия:
+            AddCallbackCommand(new OnBackToMain(client));
+            AddCallbackCommand(new OnAssistantOn(client));
+            AddCallbackCommand(new OnAssistantOff(client));
+            AddCallbackCommand(new OnNewChat(client));
+            AddCallbackCommand(new OnSelectChat(client));
+            AddCallbackCommand(new OnSwitchChat(client));
+            AddCallbackCommand(new OnLoadChat(client));
+            AddCallbackCommand(new OnDeleteChat(client));
+            AddCallbackCommand(new OnRPSGameStart(client));
+            AddCallbackCommand(new OnProfileNameSet(client));
+            AddCallbackCommand(new OnProfileTopicSet(client));
+            AddCallbackCommand(new OnProfileStyleSet(client));
         }
-        /// <summary>
-        /// Метод проверки, нужно ли обрабатывать кнопки быстрых ответов, через запрос?
-        /// </summary>
-        /// <param name="message">Сообщение.</param>
-        /// <returns></returns>
-        private bool IsQuickReply(string message)
-        {
-            return message switch
-            {
-                "Привет, Бот!" => true,
-                "Как дела?" => true,
-                "Выдать случайное число" => true,
-                "Какой сегодня день?" => true,
-                "Случайный факт!" => true,
-                "Выдать шутку" => true,
-                "Подсказать Дату и Время" => true,
-                "Прощай, Бот!" => true,
-                _ => false
-            };
-        }
+
+        private void AddTextCommand(TextCommand command) => textCommands[command.CommandName] = command;
+        private void AddCallbackCommand(CallbackCommand command) => callbackCommands[command.CommandName] = command;
+
+        public IDefaultTextCommand GetDefaultCommand() => defaultTextCommand;
+        public IDefaultCallbackCommand GetDefaultCallbackCommand() => defaultCallbackCommand;
+        public TextCommand? GetTextCommand(string commandName) => textCommands.TryGetValue(commandName, out var command) ? command : null;
+        public CallbackCommand? GetCallbackCommand(string commandName) => callbackCommands.TryGetValue(commandName, out var command) ? command : null;
     }
 }

@@ -1,29 +1,34 @@
-﻿using System.Net.Http.Headers;
+﻿using Utilities;
 
-namespace GPTChatBot_Maksim
+namespace Assistant
 {
     /// <summary>
     /// Обработка AI-ассистента для генерации ответов-сообщении (основа DeepInfra)
     /// </summary>
-    public class AI_AssistantLogic
+    public class AI_AssistantLogic(string apiKey)
     {
-        private static readonly HttpClient httpClient = new();
-        private const string apiUrl = "https://api.deepinfra.com/v1/openai/chat/completions";
-        private readonly string apiKey;
-        public AI_AssistantLogic(string apiKey)
-        {
-            this.apiKey = apiKey;
-        }
+        private const string API_URL = "https://api.deepinfra.com/v1/openai/chat/completions";
+        private static readonly HttpClient HTTPCLIENT = new();
+        
+        private readonly string apiKey = apiKey;
+        private readonly CensorDetector censorer = new();
+
         /// <summary>
         /// Генерация AI-ответов
         /// </summary>
-        /// <param name="userMsg"></param>
-        /// <returns></returns>
-        internal async Task<string> GenerateResponse(string userMsg)
+        /// <param name="userMsg">Сообщение пользователя.</param>
+        /// <param name="chatId">ИД чата.</param>
+        /// <returns>Сгенерированный осмысленный ответ ассистента.</returns>
+        internal async Task<string> GenerateResponse(string userMsg, long chatId)
         {
+            string censorResult = censorer.CheckMessageForCensorship(chatId, userMsg);
+
+            if (!string.IsNullOrEmpty(censorResult))
+                return censorResult;
+
             var requestBody = new
             {
-                model = "qwen2.5/7b-chat",
+                model = "Qwen/Qwen2.5-7B-Instruct",
                 messages = new[]
                 {
                     new {role = "system", content = "Ты простой разговорный дружелюбный собеседник, с которым можно поболтать на любые темы."},
@@ -32,15 +37,15 @@ namespace GPTChatBot_Maksim
                 max_tokens = 512
             };
 
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            HTTPCLIENT.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
 
             var requestJson = JsonSerializer.Serialize(requestBody);
-            var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
+            var request = new HttpRequestMessage(HttpMethod.Post, API_URL)
             {
                 Content = new StringContent(requestJson, Encoding.UTF8, "application/json")
             };
 
-            var response = await httpClient.SendAsync(request);
+            var response = await HTTPCLIENT.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -59,12 +64,13 @@ namespace GPTChatBot_Maksim
 
             return answer ?? "Я не понял твоего вопроса.";
         }
+
         /// <summary>
-        /// Обработка текстовых файлов, с выдачей на основе их анализа AI-ответов
+        /// Обработка текстовых файлов
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="bot_client"></param>
-        /// <returns></returns>
+        /// <param name="message">Сообщение.</param>
+        /// <param name="bot_client">Клиент.</param>
+        /// <returns>Выдает результат итогового анализа после прочтения файла.</returns>
         internal async Task ProcessTextFileAsync(Message message, TelegramBotClient bot_client)
         {
             if (message.Document == null)
@@ -77,14 +83,14 @@ namespace GPTChatBot_Maksim
 
             // проверка расширении файла
             var allowedExtensions = new List<string> { ".txt", ".rtf", ".md", ".csv" };
-            string fileName = message.Document.FileName;
+            string fileName = message.Document.FileName ?? "Unnamed";
             string fileExtension = Path.GetExtension(fileName).ToLower();
 
             if (!allowedExtensions.Contains(fileExtension))
             {
                 await bot_client.SendChatAction(message.Chat.Id, ChatAction.Typing);
                 await Task.Delay(1500);
-                await bot_client.SendMessage(message.Chat.Id, $"Поддерживаются только текстовые файлы {allowedExtensions.Count.ToString()}");
+                await bot_client.SendMessage(message.Chat.Id, $"Поддерживаются только текстовые файлы {allowedExtensions.Count}");
                 return;
             }
 
@@ -101,14 +107,15 @@ namespace GPTChatBot_Maksim
 
             await SendToGPT(fileContent, message.Chat.Id, bot_client);
         }
+
         /// <summary>
         /// Отправка документов-файлов на http сервер для обработки
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="chatID"></param>
-        /// <param name="bot_client"></param>
-        /// <returns></returns>
-        internal async Task SendToGPT(string text, long chatID, TelegramBotClient bot_client)
+        /// <param name="text">Отправленный текст.</param>
+        /// <param name="chatID">ИД чата.</param>
+        /// <param name="bot_client">Клиент.</param>
+        /// <returns>Полученный ответ от используемой модели ИИ.</returns>
+        internal static async Task SendToGPT(string text, long chatID, TelegramBotClient bot_client)
         {
             string apiUrl = "https://free.churchless.tech/v1/chat/completions"; ;
 
@@ -122,7 +129,7 @@ namespace GPTChatBot_Maksim
             };
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync(apiUrl, jsonContent);
+            var response = await HTTPCLIENT.PostAsync(apiUrl, jsonContent);
             var responseString = await response.Content.ReadAsStringAsync();
 
             using var document = JsonDocument.Parse(responseString);

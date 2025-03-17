@@ -1,29 +1,36 @@
-﻿namespace GPTChatBot_Maksim
+﻿using Assistant;
+using Commands;
+using Handlers;
+using Utilities;
+
+namespace TelegrammBot
 {
     /// <summary>
     /// Основная "оболочка" Телеграмм-Бота. Здесь обрабатывается его: создание, запуск, отчеты об ошибках
     /// </summary>
-    public class AI_TeleBot
+   public class AI_TeleBot
     {
         private readonly TelegramBotClient bot_client;
         private readonly CommandManager commandManager;
-        public static AI_AssistantLogic ai_assistant;
-        /// <summary>
-        /// Приветствие Телеграмм-Бота, отправляется плавно по частям
-        /// </summary>
-        public static string GPTBotWelcome { get; private set; } = "Приветствую! Я *GPTMaksim*\nПростой бот для разговора с AI возможностями!\n" +
-            "Умею:\n 🔹 Отвечать на ваши вопросы;\n 🔹 Обрабатывать файлы;\n 🔹 Предлагать полезные факты или смешно пошутить;\n" +
-            " 🔹 Работать с чатами;\n 🔹 Работать с профилем пользователя;\n 🔹 Ну и просто провести с тобой хорошее время!";
+        private readonly UpdateHandler handler_update;
+        private readonly MessageHandler handler_message;
+        private readonly FileHandler handler_file;
+        private readonly CallBackHandler handler_callback;
+        private readonly ErrorHandler handler_errors;
+        private static AI_AssistantLogic ai_assistant;
+
+        public static readonly ChatHistoryManager chatHistoryManager = new();
+        public static readonly UserProfile userProfile = new();
         public static readonly Dictionary<long, bool> isAssistant_Mode = [];
-        public static readonly Dictionary<long, DateTime> lastcmdTime = [];
-        private readonly Logger logger;
+
+        public static AI_AssistantLogic AI_ASSISTANT { get => ai_assistant; set => ai_assistant = value; }
 
         /// <summary>
         /// Создание Телеграмм-Бота. Токен бота, создается 2 способами и обрабатывается исключение при неудаче
         /// </summary>
         /// <param name="logDir"></param>
         /// <param name="tokenNullException"></param>
-        public AI_TeleBot(string logDir, Exception tokenNullException)
+        public AI_TeleBot(Exception tokenNullException)
         {
             string token = Environment.GetEnvironmentVariable("GPTMaksim") ??
                 ConfigurationManager.ConnectionStrings["GPTMaksim"]?.ConnectionString ?? 
@@ -34,45 +41,41 @@
                 throw tokenNullException;
 
             bot_client = new(token);
-            commandManager = new(bot_client);
-            ai_assistant = new(AiKey);
-            logger = new Logger(logDir, LogLevel.Error);
+            commandManager = new(bot_client, ai_assistant);
+            handler_update = RegisterHandlers(handler_message, handler_callback, handler_file, handler_errors);
+            AI_ASSISTANT = new(AiKey);
         }
-        /// <summary>
-        /// Запуск работы бота в бесконечном цикле
-        /// </summary>
-        /// <returns></returns>
+
+        private void StartReceiving(Action<Exception> errorHandler)
+        {
+            bot_client.StartReceiving(async (client, update, token) => await handler_update.HandleUpdate(update),
+                async (client, exception, token) => errorHandler(exception));
+        }
+
+        private UpdateHandler RegisterHandlers(MessageHandler msgHnd, CallBackHandler cbHnd, FileHandler fileHnd, ErrorHandler errHnd)
+        {
+            msgHnd = new(bot_client, ai_assistant, commandManager);
+            fileHnd = new(bot_client, ai_assistant);
+            cbHnd = new(bot_client, commandManager);
+            errHnd = new();
+
+            return new(msgHnd, cbHnd, fileHnd, errHnd);
+        }
+
         public async Task StartAsync()
         {
             var me = await bot_client.GetMe();
             Console.WriteLine($"Бот {me.Username} запущен...");
-            logger.LogMessage(LogLevel.Info, $"Бот `{me.Username}` запущен!");
+            Logger.INSTANCE.LogMessage(LogLevel.Info, $"Бот `{me.Username}` запущен!");
             
             var reciever_options = new ReceiverOptions
             {
                 AllowedUpdates = [],
                 DropPendingUpdates = true
             };
-            bot_client.StartReceiving(updateHandler: async (client, update, token) => await commandManager.HandleUpdate(update),
-                errorHandler: async (client, exception, token) => await ErrorHandler(exception), reciever_options);
-            await Task.Delay(-1); // Бесконечное ожидание не дающее программе завершится
+            StartReceiving(exception => handler_errors.HandleError(exception));
+            await Task.Delay(Timeout.Infinite); // Бесконечное ожидание не дающее программе завершится
         }
-        /// <summary>
-        /// Обработчик API ошибок бота
-        /// </summary>
-        /// <param name="exception">API Исключение.</param>
-        /// <returns></returns>
-        private async Task ErrorHandler(Exception exception)
-        {
-            string error_message = exception switch
-            {
-                ApiRequestException apiReqEx => $"Ошибка API:\n{apiReqEx.ErrorCode} - {apiReqEx.Message}",
-                _ => exception.ToString()
-            };
-
-            Console.WriteLine(error_message);
-            logger.LogMessage(LogLevel.Error, error_message);
-            await Task.CompletedTask;
-        }
+        
     }
 }

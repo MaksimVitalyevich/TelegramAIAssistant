@@ -1,10 +1,10 @@
-﻿namespace GPTChatBot_Maksim.Dictionaries
+﻿namespace Dictionaries
 {
     public static class ReplyDictionaries
     {
         // [] эквивалетно для string[] = new {};
-        public static string[] Greetings = [ "Приветствую ", "Добрый день ", "Привет ", "Здорово ", "Здравствуй ", "Приветствую вас " ];
-        public static string[] Feelings =
+        public static readonly string[] Greetings = ["Приветствую ", "Добрый день ", "Привет ", "Здорово ", "Здравствуй ", "Приветствую вас "];
+        public static readonly string[] Feelings =
         [
             "Отлично! Спасибо!!!", "Чувствую себя прекрасно!",
             "У меня все замечательно!", "Я в довольно хорошем настроении!",
